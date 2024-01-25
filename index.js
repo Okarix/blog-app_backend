@@ -1,6 +1,8 @@
+import bcrypt from 'bcrypt';
 import 'dotenv/config';
 import express from 'express';
 import { validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import UserModel from './models/User.js';
 import { registerValidation } from './validations/auth.js';
@@ -8,7 +10,7 @@ import { registerValidation } from './validations/auth.js';
 const adminPass = process.env.ADMIN_PASS;
 
 mongoose
-	.connect(`mongodb+srv://admin:${adminPass}@cluster0.xn2zx35.mongodb.net/?retryWrites=true&w=majority`)
+	.connect(`mongodb+srv://admin:${adminPass}@cluster0.xn2zx35.mongodb.net/blog?retryWrites=true&w=majority`)
 	.then(() => console.log('DB OK'))
 	.catch(err => console.log('DB error', err));
 
@@ -16,22 +18,45 @@ const app = express(); // вся логика приложения хранит�
 
 app.use(express.json()); // позволяет читать json запросы
 
-app.post('/register', registerValidation, (req, res) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json(errors.array());
+app.post('/register', registerValidation, async (req, res) => {
+	try {
+		const errors = validationResult(req); // получаем все ошибки с регистрации
+		if (!errors.isEmpty()) {
+			return res.status(400).json(errors.array());
+		} // ошибки клиентской стороны
+
+		const password = req.body.password; //получаем пароль
+		const salt = await bcrypt.genSalt(10); // соль это алгоритм шифрования пароля
+		const hash = await bcrypt.hash(password, salt); // шифруем пароль
+
+		const doc = new UserModel({
+			email: req.body.email,
+			fullName: req.body.fullName,
+			avatarUrl: req.body.avatarUrl,
+			passwordHash: hash,
+		}); // создаем модель пользователя для бд
+		const user = await doc.save(); // сохраняем юзера в бд
+
+		const token = jwt.sign(
+			{
+				_id: user._id,
+			},
+			'secret123',
+			{ expiresIn: '30d' }
+		); // Шифруем id в токен и срок на 30 дней
+
+		const { passwordHash, ...userData } = user._doc; // деструктуризируем документ, чтобы создать объект без hash
+
+		res.json({
+			...userData,
+			token,
+		}); // возвращаем ответ
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Failed to registration',
+		});
 	}
-
-	const doc = new UserModel({
-		email: req.body.email,
-		fullName: req.body.fullName,
-		passwordHash: req.body.password,
-		avatarUrl: req.body.avatarUrl,
-	});
-
-	res.json({
-		success: true,
-	});
 });
 
 app.listen(4444, err => {
