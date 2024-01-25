@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
 const adminPass = process.env.ADMIN_PASS;
@@ -14,31 +13,7 @@ const app = express(); // вся логика приложения хранит�
 
 app.use(express.json()); // позволяет читать json запросы
 
-app.get('/', (req, res) => {
-	res.send('Hello world');
-}); // ответ на гет запрос
-
-app.post('/login', (req, res) => {
-	console.log(req.body);
-
-	if (req.body.email === 'test@gmail.com') {
-		const token = jwt.sign(
-			{
-				email: req.body.email,
-				fullName: 'Бека Беков',
-			},
-			'secret123'
-		); //генерируем токен(внутри же шифруем)
-		res.json({
-			success: true,
-			token,
-		});
-	} else {
-		res.json({
-			error: 'Incorrect email format',
-		});
-	}
-});
+app.post('/register', (req, res) => {});
 
 app.listen(4444, err => {
 	if (err) {
