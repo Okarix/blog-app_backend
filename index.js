@@ -5,6 +5,7 @@ import { validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import UserModel from './models/User.js';
+import checkAuth from './utils/checkAuth.js';
 import { registerValidation } from './validations/auth.js';
 
 const adminPass = process.env.ADMIN_PASS;
@@ -57,6 +58,54 @@ app.post('/register', registerValidation, async (req, res) => {
 			message: 'Failed to registration',
 		});
 	}
+});
+
+app.post('/login', async (req, res) => {
+	try {
+		const user = await UserModel.findOne({ email: req.body.email }); //ищем пользователя по почте
+
+		if (!user) {
+			return res.status(404).json({
+				message: 'User not found',
+			});
+		} // если пользователь не найден
+
+		const isValidPass = await bcrypt.compare(req.body.password, user._doc.passwordHash); // сравниваем пароли
+
+		if (!isValidPass) {
+			return res.status(400).json({
+				message: 'Wrong login or password',
+			});
+		} // если пароль неправильный
+
+		const token = jwt.sign(
+			{
+				_id: user._id,
+			},
+			'secret123',
+			{ expiresIn: '30d' }
+		);
+
+		const { passwordHash, ...userData } = user._doc;
+
+		res.json({
+			...userData,
+			token,
+		});
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Failed to authorization',
+		});
+	}
+});
+
+app.get('/me', checkAuth, (req, res) => {
+	try {
+		res.json({
+			success: true,
+		});
+	} catch (err) {}
 });
 
 app.listen(4444, err => {
