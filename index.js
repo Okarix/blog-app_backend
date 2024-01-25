@@ -100,12 +100,25 @@ app.post('/login', async (req, res) => {
 	}
 });
 
-app.get('/me', checkAuth, (req, res) => {
+app.get('/me', checkAuth, async (req, res) => {
 	try {
-		res.json({
-			success: true,
+		const user = await UserModel.findById(req.userId); // ищем пользователя с таким id
+
+		if (!user) {
+			return res.status(404).json({
+				message: 'User not found',
+			});
+		}
+
+		const { passwordHash, ...userData } = user._doc;
+
+		res.json(userData);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'No access',
 		});
-	} catch (err) {}
+	}
 });
 
 app.listen(4444, err => {
