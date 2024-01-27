@@ -15,12 +15,12 @@ export const getAll = async (req, res) => {
 	}
 };
 
-export const getOne = (req, res) => {
+export const getOne = async (req, res) => {
 	try {
 		const postId = req.params.id; // получаем id статьи из параметров
 
 		// находим одну статью и обновляем в ней число просмотров
-		PostModel.findOneAndUpdate(
+		await PostModel.findOneAndUpdate(
 			{
 				_id: postId, // получаем id
 			},
@@ -62,7 +62,6 @@ export const create = async (req, res) => {
 			title: req.body.title,
 			text: req.body.text,
 			tags: req.body.tags,
-			viewsCount: req.body.viewsCount,
 			user: req.userId,
 			imageUrl: req.body.imageUrl,
 		}); // создаем документ в модели статьи
@@ -78,11 +77,11 @@ export const create = async (req, res) => {
 	}
 };
 
-export const remove = (req, res) => {
+export const remove = async (req, res) => {
 	try {
 		const postId = req.params.id; // получаем id статьи из параметров
 
-		PostModel.findOneAndDelete({
+		await PostModel.findOneAndDelete({
 			_id: postId,
 		}).then((doc, err) => {
 			if (err) {
@@ -106,6 +105,34 @@ export const remove = (req, res) => {
 		console.log(err);
 		res.status(500).json({
 			message: 'Failed to delete post',
+		});
+	}
+};
+
+export const update = async (req, res) => {
+	try {
+		const postId = req.params.id; // получаем id статьи из параметров
+
+		await PostModel.findOneAndUpdate(
+			{
+				_id: postId,
+			},
+			{
+				title: req.body.title,
+				text: req.body.text,
+				tags: req.body.tags,
+				user: req.userId,
+				imageUrl: req.body.imageUrl,
+			}
+		);
+
+		res.json({
+			success: true,
+		});
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Failed to update post',
 		});
 	}
 };
