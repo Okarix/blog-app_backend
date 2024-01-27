@@ -77,3 +77,35 @@ export const create = async (req, res) => {
 		});
 	}
 };
+
+export const remove = (req, res) => {
+	try {
+		const postId = req.params.id; // получаем id статьи из параметров
+
+		PostModel.findOneAndDelete({
+			_id: postId,
+		}).then((doc, err) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).json({
+					message: 'Failed to delete post',
+				});
+			}
+
+			if (!doc) {
+				return res.status(404).json({
+					message: 'Failed to find post ',
+				});
+			}
+
+			res.json({
+				success: true,
+			});
+		});
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Failed to delete post',
+		});
+	}
+};
