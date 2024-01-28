@@ -1,15 +1,9 @@
 import bcrypt from 'bcrypt';
-import { validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import UserModel from '../models/User.js';
 
 export const register = async (req, res) => {
 	try {
-		const errors = validationResult(req); // получаем все ошибки с регистрации
-		if (!errors.isEmpty()) {
-			return res.status(400).json(errors.array());
-		} // ошибки клиентской стороны
-
 		const password = req.body.password; //получаем пароль
 		const salt = await bcrypt.genSalt(10); // соль это алгоритм шифрования пароля
 		const hash = await bcrypt.hash(password, salt); // шифруем пароль
@@ -46,11 +40,6 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
 	try {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json(errors.array());
-		} // ошибки клиентской стороны
-
 		const user = await UserModel.findOne({ email: req.body.email }); //ищем пользователя по почте
 
 		if (!user) {
