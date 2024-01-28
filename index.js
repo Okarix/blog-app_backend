@@ -2,10 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
-import * as PostController from './controllers/PostController.js';
-import * as UserController from './controllers/UserController.js';
-import checkAuth from './utils/checkAuth.js';
-import handleValidationErrors from './utils/handleValidationErrors.js';
+import { PostController, UserController } from './controllers/index.js';
+import { checkAuth, handleValidationErrors } from './utils/index.js';
 import { loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
 
 const adminPass = process.env.ADMIN_PASS;
