@@ -1,12 +1,15 @@
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
+import multer from 'multer';
 import * as PostController from './controllers/PostController.js';
 import * as UserController from './controllers/UserController.js';
 import checkAuth from './utils/checkAuth.js';
 import { loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
 
 const adminPass = process.env.ADMIN_PASS;
+
+//подключение к бд
 mongoose
 	.connect(`mongodb+srv://admin:${adminPass}@cluster0.xn2zx35.mongodb.net/blog?retryWrites=true&w=majority`)
 	.then(() => console.log('DB OK'))
@@ -14,17 +17,36 @@ mongoose
 
 const app = express(); // вся логика приложения хранится в этой переменной
 
+// создаем хранилище для изображений
+const storage = multer.diskStorage({
+	destination: (_, __, cb) => {
+		cb(null, 'uploads');
+	},
+	filename: (_, file, cb) => {
+		cb(null, file.originalname);
+	},
+});
+
+const upload = multer({ storage }); // создаем функцию которая будет хранить изображения в хранилище
+
 app.use(express.json()); // позволяет читать json запросы
+app.use('/uploads', express.static('uploads')); // возвращение статических файлов
 
 app.post('/register', registerValidation, UserController.register);
 app.post('/login', loginValidation, UserController.login);
 app.get('/me', checkAuth, UserController.getMe);
 
+app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
+	res.json({
+		url: `uploads/${req.file.originalname}`,
+	});
+});
+
 app.get('/posts', PostController.getAll);
 app.get('/posts/:id', PostController.getOne);
 app.post('/posts', checkAuth, postCreateValidation, PostController.create);
 app.delete('/posts/:id', checkAuth, PostController.remove);
-app.patch('/posts/:id', checkAuth, PostController.update);
+app.patch('/posts/:id', postCreateValidation, checkAuth, PostController.update);
 
 app.listen(4444, err => {
 	if (err) {
