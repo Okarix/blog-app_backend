@@ -5,6 +5,7 @@ import multer from 'multer';
 import { PostController, UserController } from './controllers/index.js';
 import { checkAuth, handleValidationErrors } from './utils/index.js';
 import { loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
+import cors from 'cors';
 
 const adminPass = process.env.ADMIN_PASS;
 
@@ -29,6 +30,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }); // создаем функцию которая будет хранить изображения в хранилище
 
 app.use(express.json()); // позволяет читать json запросы
+app.use(cors()); // разрешаем запросы с любого клиента(адрес)
 app.use('/uploads', express.static('uploads')); // возвращение статических файлов
 
 app.post('/register', registerValidation, handleValidationErrors, UserController.register);
