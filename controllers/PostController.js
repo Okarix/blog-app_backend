@@ -48,24 +48,26 @@ export const getOne = async (req, res) => {
 			{
 				returnDocument: 'after', // возвращаем измененный документ
 			}
-		).then(
-			(doc, err) => {
-				if (err) {
-					console.log(err);
-					return res.status(500).json({
-						message: 'Failed to get post',
-					});
-				}
+		)
+			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
+			.then(
+				(doc, err) => {
+					if (err) {
+						console.log(err);
+						return res.status(500).json({
+							message: 'Failed to get post',
+						});
+					}
 
-				if (!doc) {
-					return res.status(404).json({
-						message: 'Post not found',
-					});
-				}
+					if (!doc) {
+						return res.status(404).json({
+							message: 'Post not found',
+						});
+					}
 
-				res.json(doc);
-			} // проверка если есть ошибки, нет документа и если все норм
-		);
+					res.json(doc);
+				} // проверка если есть ошибки, нет документа и если все норм
+			);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
