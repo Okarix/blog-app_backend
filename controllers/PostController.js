@@ -22,6 +22,7 @@ export const getAll = async (req, res) => {
 	try {
 		const posts = await PostModel.find()
 			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
+			.sort({ createdAt: -1 })
 			.exec(); // ищем все статьи пользователя и связываемся с бд для этого и выполняем
 
 		res.json(posts);
