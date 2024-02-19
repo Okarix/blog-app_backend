@@ -37,38 +37,32 @@ export const getAll = async (req, res) => {
 export const getOne = async (req, res) => {
 	try {
 		const postId = req.params.id; // получаем id статьи из параметров
+		const userId = req.query.viewed;
 
-		// находим одну статью и обновляем в ней число просмотров
-		await PostModel.findOneAndUpdate(
-			{
-				_id: postId, // получаем id
-			},
+		// Проверить, уже ли пользователь просматривал пост
+		const post = await PostModel.findById(postId);
+		if (post.viewedBy.includes(userId)) {
+			return res.json(post); // Не увеличивать просмотры, если уже просмотрено
+		}
+
+		// Обновляем число просмотров и добавляем ID пользователя в список просмотревших,
+		// только если пользователь еще не просматривал этот пост
+		const updatedPost = await PostModel.findByIdAndUpdate(
+			postId,
 			{
 				$inc: { viewsCount: 1 }, // инкрементируем число просмотров
+				$addToSet: { viewedBy: userId }, // Добавить ID пользователя в список просмотревших, если его там еще нет
 			},
-			{
-				returnDocument: 'after', // возвращаем измененный документ
-			}
-		)
-			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
-			.then(
-				(doc, err) => {
-					if (err) {
-						console.log(err);
-						return res.status(500).json({
-							message: 'Failed to get post',
-						});
-					}
+			{ new: true } // чтобы получить обновленный документ после обновления
+		).populate({ path: 'user', select: ['fullName', 'avatarUrl'] });
 
-					if (!doc) {
-						return res.status(404).json({
-							message: 'Post not found',
-						});
-					}
+		if (!updatedPost) {
+			return res.status(404).json({
+				message: 'Post not found',
+			});
+		}
 
-					res.json(doc);
-				} // проверка если есть ошибки, нет документа и если все норм
-			);
+		res.json(updatedPost);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
