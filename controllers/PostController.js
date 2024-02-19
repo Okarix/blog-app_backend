@@ -34,6 +34,22 @@ export const getAll = async (req, res) => {
 	}
 };
 
+export const getPopular = async (req, res) => {
+	try {
+		const posts = await PostModel.find()
+			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
+			.sort({ viewsCount: -1 })
+			.exec();
+
+		res.json(posts);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Failed to get posts',
+		});
+	}
+};
+
 export const getOne = async (req, res) => {
 	try {
 		const postId = req.params.id; // получаем id статьи из параметров
