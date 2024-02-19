@@ -20,8 +20,9 @@ const PostSchema = new mongoose.Schema(
 			default: 0,
 		},
 		viewedBy: {
-			type: Array,
+			type: [mongoose.Schema.Types.ObjectId],
 			default: [],
+			unique: true,
 		},
 		user: {
 			// по ID будем ссылаться на пользователя
