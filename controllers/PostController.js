@@ -73,8 +73,6 @@ export const getOne = async (req, res) => {
 			{ returnDocument: 'after' } // чтобы получить обновленный документ после обновления
 		);
 
-		console.log(updatedPost);
-
 		if (!updatedPost) {
 			return res.status(404).json({
 				message: 'Post not found',
@@ -152,11 +150,14 @@ export const update = async (req, res) => {
 				_id: postId,
 			},
 			{
-				title: req.body.title,
-				text: req.body.text,
-				tags: req.body.tags.split(', '),
-				user: req.userId,
-				imageUrl: req.body.imageUrl,
+				$inc: { viewsCount: -1 },
+				$set: {
+					title: req.body.title,
+					text: req.body.text,
+					tags: req.body.tags.split(', '),
+					user: req.userId,
+					imageUrl: req.body.imageUrl,
+				},
 			}
 		);
 
