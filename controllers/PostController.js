@@ -57,7 +57,7 @@ export const getOne = async (req, res) => {
 		const userId = req.query.viewed;
 
 		// Проверить, уже ли пользователь просматривал пост
-		const post = await PostModel.findById(postId);
+		const post = await PostModel.findById(postId).populate({ path: 'user', select: ['fullName', 'avatarUrl'] });
 		if (post.viewedBy.includes(userId)) {
 			return res.json(post); // Не увеличивать просмотры, если уже просмотрено
 		}
@@ -70,8 +70,10 @@ export const getOne = async (req, res) => {
 				$inc: { viewsCount: 1 }, // инкрементируем число просмотров
 				$addToSet: { viewedBy: userId }, // Добавить ID пользователя в список просмотревших, если его там еще нет
 			},
-			{ new: true } // чтобы получить обновленный документ после обновления
-		).populate({ path: 'user', select: ['fullName', 'avatarUrl'] });
+			{ returnDocument: 'after' } // чтобы получить обновленный документ после обновления
+		);
+
+		console.log(updatedPost);
 
 		if (!updatedPost) {
 			return res.status(404).json({
