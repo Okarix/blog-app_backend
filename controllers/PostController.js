@@ -67,10 +67,9 @@ export const getOne = async (req, res) => {
 		const updatedPost = await PostModel.findByIdAndUpdate(
 			postId,
 			{
-				$inc: { viewsCount: 1 }, // инкрементируем число просмотров
 				$addToSet: { viewedBy: userId }, // Добавить ID пользователя в список просмотревших, если его там еще нет
 			},
-			{ returnDocument: 'after' } // чтобы получить обновленный документ после обновления
+			{ new: true } // чтобы получить обновленный документ после обновления
 		);
 
 		if (!updatedPost) {
@@ -150,7 +149,7 @@ export const update = async (req, res) => {
 				_id: postId,
 			},
 			{
-				$inc: { viewsCount: -1 },
+				// $inc: { viewsCount: -1 },
 				$set: {
 					title: req.body.title,
 					text: req.body.text,
