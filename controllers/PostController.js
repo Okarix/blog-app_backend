@@ -37,10 +37,36 @@ export const getAll = async (req, res) => {
 
 export const getPopular = async (req, res) => {
 	try {
-		const posts = await PostModel.find()
-			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
-			.sort({ viewsCount: -1 })
-			.exec();
+		const posts = await PostModel.aggregate([
+			{
+				$addFields: {
+					viewedByCount: { $size: '$viewedBy' },
+				},
+			},
+			{
+				$sort: { viewedByCount: -1 },
+			},
+			{
+				$lookup: {
+					from: 'users', // assuming your users collection name is "users"
+					localField: 'user',
+					foreignField: '_id',
+					as: 'user',
+				},
+			},
+			{
+				$project: {
+					title: 1,
+					text: 1,
+					tags: 1,
+					viewedBy: 1,
+					user: { $arrayElemAt: ['$user', 0] },
+					imageUrl: 1,
+					createdAt: 1,
+					updatedAt: 1,
+				},
+			},
+		]);
 
 		res.json(posts);
 	} catch (err) {
