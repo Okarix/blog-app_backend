@@ -19,6 +19,23 @@ export const getLastTags = async (req, res) => {
 	}
 };
 
+export const getPostsByTag = async (req, res) => {
+	try {
+		const tag = req.params.tag;
+
+		const posts = await PostModel.find({ tags: tag })
+			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
+			.sort({ createdAt: -1 })
+			.exec();
+		res.json(posts);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Failed to get posts',
+		});
+	}
+};
+
 export const getAll = async (req, res) => {
 	try {
 		const posts = await PostModel.find()
