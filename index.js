@@ -6,6 +6,7 @@ import { CommentController, PostController, UserController } from './controllers
 import { checkAuth, handleValidationErrors } from './utils/index.js';
 import { commentCreateValidation, loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
 import cors from 'cors';
+import fs from 'fs';
 
 //подключение к бд
 mongoose
@@ -18,6 +19,9 @@ const app = express(); // вся логика приложения хранит�
 // создаем хранилище для изображений
 const storage = multer.diskStorage({
 	destination: (_, __, cb) => {
+		if (!fs.existsSync('uploads')) {
+			fs.mkdirSync('uploads');
+		}
 		cb(null, 'uploads');
 	},
 	filename: (_, file, cb) => {
