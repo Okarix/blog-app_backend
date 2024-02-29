@@ -7,11 +7,9 @@ import { checkAuth, handleValidationErrors } from './utils/index.js';
 import { commentCreateValidation, loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
 import cors from 'cors';
 
-const adminPass = process.env.ADMIN_PASS;
-
 //подключение к бд
 mongoose
-	.connect(`mongodb+srv://admin:${adminPass}@cluster0.xn2zx35.mongodb.net/blog?retryWrites=true&w=majority`)
+	.connect(`mongodb+srv://admin:admin123@cluster0.xn2zx35.mongodb.net/blog?retryWrites=true&w=majority`)
 	.then(() => console.log('DB OK'))
 	.catch(err => console.log('DB error', err));
 
