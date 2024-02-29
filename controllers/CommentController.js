@@ -23,7 +23,10 @@ export const getCommentsByPost = async (req, res) => {
 	try {
 		const postId = req.params.id;
 
-		const comments = await CommentModel.find({ post: postId });
+		const comments = await CommentModel.find({ post: postId })
+			.populate({ path: 'user', select: ['fullName', 'avatarUrl'] })
+			.sort({ createdAt: -1 })
+			.exec();
 
 		if (comments) {
 			res.json(comments);
