@@ -9,7 +9,7 @@ import cors from 'cors';
 
 //подключение к бд
 mongoose
-	.connect(`mongodb+srv://admin:admin123@cluster0.xn2zx35.mongodb.net/blog?retryWrites=true&w=majority`)
+	.connect(process.env.MONGODB_URI)
 	.then(() => console.log('DB OK'))
 	.catch(err => console.log('DB error', err));
 
@@ -53,7 +53,7 @@ app.patch('/posts/:id', checkAuth, postCreateValidation, handleValidationErrors,
 app.post('/posts/:id/createComment', checkAuth, commentCreateValidation, handleValidationErrors, CommentController.create);
 app.get('/posts/:id/comments', CommentController.getCommentsByPost);
 
-app.listen(4444, err => {
+app.listen(process.env.PORT || 4444, err => {
 	if (err) {
 		return console.log(err);
 	}
