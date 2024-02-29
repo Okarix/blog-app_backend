@@ -2,9 +2,9 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
-import { PostController, UserController } from './controllers/index.js';
+import { CommentController, PostController, UserController } from './controllers/index.js';
 import { checkAuth, handleValidationErrors } from './utils/index.js';
-import { loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
+import { commentCreateValidation, loginValidation, postCreateValidation, registerValidation } from './validatiions.js';
 import cors from 'cors';
 
 const adminPass = process.env.ADMIN_PASS;
@@ -46,11 +46,14 @@ app.post('/upload', upload.single('image'), (req, res) => {
 app.get('/posts', PostController.getAll);
 app.get('/posts/popular', PostController.getPopular);
 app.get('/posts/tags', PostController.getLastTags);
-app.get('/posts/:tag', PostController.getPostsByTag);
+app.get('/posts/byTag/:tag', PostController.getPostsByTag);
 app.get('/posts/:id', PostController.getOne);
 app.post('/posts', checkAuth, postCreateValidation, handleValidationErrors, PostController.create);
 app.delete('/posts/:id', checkAuth, PostController.remove);
 app.patch('/posts/:id', checkAuth, postCreateValidation, handleValidationErrors, PostController.update);
+
+app.post('/posts/:id/createComment', checkAuth, commentCreateValidation, handleValidationErrors, CommentController.create);
+app.get('/posts/:id/comments', CommentController.getCommentsByPost);
 
 app.listen(4444, err => {
 	if (err) {
